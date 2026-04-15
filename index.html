@@ -1,246 +1,313 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELITE STREAM | 1.2 FIX TV</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    
-    <style>
-        :root {
-            --neon-blue: #00f2ff;
-            --neon-green: #39ff14;
-            --bg-dark: #020203;
-            --sidebar-bg: rgba(15, 15, 20, 0.98);
-            --plyr-color-main: #00f2ff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELITE STREAM | 1.2 FIX TV</title>
 
-        /* Reset para TV: nada de scroll y cursor oculto si no se mueve */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; outline: none; }
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 
-        body {
-            background-color: var(--bg-dark);
-            color: white;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden; /* Evita que la TV haga scroll raro */
-            display: flex;
-            flex-direction: column;
-        }
+<style>
+:root {
+    --neon-blue: #00f2ff;
+    --neon-green: #39ff14;
+    --bg-dark: #020203;
+    --sidebar-bg: rgba(15, 15, 20, 0.98);
+    --plyr-color-main: #00f2ff;
+}
 
-        /* HEADER REDUCIDO PARA DAR ESPACIO AL VIDEO */
-        header {
-            height: 60px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 30px;
-            background: #000;
-            border-bottom: 2px solid rgba(0, 242, 255, 0.2);
-        }
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Rajdhani',sans-serif; outline:none; }
 
-        .logo { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; letter-spacing: 2px; }
-        .logo span { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
-        .status-tag { color: var(--neon-green); font-weight: bold; font-size: 0.9rem; letter-spacing: 1px; }
+body {
+    background: var(--bg-dark);
+    color:white;
+    height:100vh;
+    width:100vw;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+}
 
-        /* GRID PRINCIPAL: 75% VIDEO - 25% CANALES */
-        .app-grid {
-            display: grid;
-            grid-template-columns: 75% 25%;
-            flex-grow: 1;
-            height: calc(100vh - 60px);
-        }
+/* HEADER */
+header {
+    height:60px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 30px;
+    background:#000;
+    border-bottom:2px solid rgba(0,242,255,0.2);
+}
 
-        /* ZONA DEL REPRODUCTOR */
-        main {
-            background: #000;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-        }
+.logo { font-family:'Orbitron'; font-size:1.2rem; letter-spacing:2px; }
+.logo span { color:var(--neon-blue); text-shadow:0 0 10px var(--neon-blue); }
+.status-tag { color:var(--neon-green); font-size:0.9rem; }
 
-        .player-container {
-            width: 100%;
-            height: 80%; /* El video ocupa el 80% de la zona main */
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid transparent;
-        }
+/* GRID */
+.app-grid {
+    display:grid;
+    grid-template-columns:75% 25%;
+    flex-grow:1;
+    height:calc(100vh - 60px);
+}
 
-        .player-container:focus-within {
-            border-color: var(--neon-blue);
-        }
+/* PLAYER */
+main {
+    background:#000;
+    display:flex;
+    flex-direction:column;
+    padding:10px;
+}
 
-        .stream-info {
-            height: 20%;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+.player-container {
+    width:100%;
+    height:80%;
+    border-radius:10px;
+    overflow:hidden;
+    border:2px solid transparent;
+}
 
-        .stream-info h1 { font-family: 'Orbitron'; color: var(--neon-blue); font-size: 1.8rem; margin-bottom: 5px; }
-        .stream-info p { color: #888; font-size: 1.1rem; }
+.player-container:focus-within {
+    border-color:var(--neon-blue);
+}
 
-        /* LATERAL DE CANALES: Más ancho y con botones grandes */
-        .sidebar {
-            background: var(--sidebar-bg);
-            border-left: 2px solid rgba(255,255,255,0.05);
-            padding: 15px;
-            overflow-y: auto;
-        }
+.stream-info {
+    height:20%;
+    padding:15px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
 
-        .sidebar h2 { 
-            font-family: 'Orbitron'; 
-            font-size: 0.7rem; 
-            color: #555; 
-            margin-bottom: 15px; 
-            text-align: center;
-            letter-spacing: 3px;
-        }
+.stream-info h1 { font-family:'Orbitron'; color:var(--neon-blue); font-size:1.8rem; }
+.stream-info p { color:#888; }
 
-        .channel-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 18px; /* Más padding para facilitar el click/foco */
-            border-radius: 12px;
-            cursor: pointer;
-            margin-bottom: 12px;
-            background: rgba(255,255,255,0.03);
-            border: 3px solid transparent;
-            transition: all 0.2s ease;
-        }
+/* SIDEBAR */
+.sidebar {
+    background:var(--sidebar-bg);
+    border-left:2px solid rgba(255,255,255,0.05);
+    padding:15px;
+    overflow-y:auto;
+}
 
-        /* FOCO DE CONTROL REMOTO: Brillo Neón */
-        .channel-item:focus {
-            background: rgba(0, 242, 255, 0.2);
-            border-color: var(--neon-blue);
-            transform: scale(1.03);
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
-        }
+.sidebar h2 {
+    font-family:'Orbitron';
+    font-size:0.7rem;
+    color:#555;
+    margin-bottom:15px;
+    text-align:center;
+}
 
-        .channel-item.active {
-            background: rgba(0, 242, 255, 0.1);
-            border-left: 6px solid var(--neon-blue);
-        }
+/* CHANNEL */
+.channel-item {
+    display:flex;
+    align-items:center;
+    gap:15px;
+    padding:18px;
+    border-radius:12px;
+    cursor:pointer;
+    margin-bottom:12px;
+    background:rgba(255,255,255,0.03);
+    border:3px solid transparent;
+    transition:0.2s;
+}
 
-        .ch-thumb {
-            width: 55px; height: 55px; /* Miniaturas más grandes */
-            background: #1a1a1f;
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 1.2rem; color: var(--neon-blue);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+.channel-item:focus {
+    background:rgba(0,242,255,0.2);
+    border-color:var(--neon-blue);
+    transform:scale(1.03);
+}
 
-        .ch-meta h4 { font-size: 1.2rem; color: #fff; margin-bottom: 3px; }
-        .ch-meta p { font-size: 0.9rem; color: #666; }
+.channel-item.active {
+    background:rgba(0,242,255,0.1);
+    border-left:6px solid var(--neon-blue);
+}
 
-        /* OCULTAR VOLUMEN EN TV (USAR CONTROL REMOTO) */
-        .plyr--video .plyr__volume { display: none !important; }
-        
-        /* Personalizar scrollbar de la lista */
-        .sidebar::-webkit-scrollbar { width: 5px; }
-        .sidebar::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 10px; }
-    </style>
+/* LOGOS */
+.ch-thumb {
+    width:55px;
+    height:55px;
+    background:#1a1a1f;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid rgba(255,255,255,0.1);
+    overflow:hidden;
+}
+
+.ch-thumb img {
+    width:100%;
+    height:100%;
+    object-fit:contain;
+}
+
+/* TEXT */
+.ch-meta h4 { font-size:1.2rem; }
+.ch-meta p { font-size:0.9rem; color:#666; }
+
+.plyr--video .plyr__volume { display:none !important; }
+
+/* 📱 MOBILE FIX */
+@media (max-width:768px){
+
+    body { overflow:auto; }
+
+    .app-grid {
+        display:flex;
+        flex-direction:column;
+        height:auto;
+    }
+
+    .player-container {
+        height:220px;
+    }
+
+    .stream-info {
+        height:auto;
+        padding:10px;
+    }
+
+    .stream-info h1 { font-size:1.2rem; }
+
+    .sidebar {
+        border-left:none;
+        border-top:2px solid rgba(255,255,255,0.05);
+    }
+
+    .channel-item {
+        padding:12px;
+    }
+
+    .ch-thumb {
+        width:40px;
+        height:40px;
+    }
+}
+</style>
 </head>
+
 <body>
 
-    <header>
-        <div class="logo">ELITE<span>STREAM</span></div>
-        <div class="status-tag">● 1.2 FIX TV</div>
-    </header>
+<header>
+    <div class="logo">ELITE<span>STREAM</span></div>
+    <div class="status-tag">● 1.2 FIX TV</div>
+</header>
 
-    <div class="app-grid">
-        <main>
-            <div class="player-container" tabindex="1">
-                <video id="player" playsinline controls></video>
-            </div>
-            <div class="stream-info">
-                <h1 id="stream-title">Selecciona Señal</h1>
-                <p id="stream-desc">Cargando la mejor calidad para tu pantalla...</p>
-            </div>
-        </main>
+<div class="app-grid">
 
-        <aside class="sidebar">
-            <h2>LISTA DE CANALES</h2>
-            <div id="channel-list">
-                
-                <div class="channel-item active" tabindex="2"
-                     data-url="https://tk0hz.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=190.175.34.68&token=9d1e44dd8997af1f7f75242f69f0502ea2a5f5ce-4e-1776321784-1776267784"
-                     data-title="TyC Sports HD" data-desc="Fútbol Argentino y más.">
-                    <div class="ch-thumb">TYC</div>
-                    <div class="ch-meta"><h4>TyC Sports</h4><p>Deportes • 1080p</p></div>
-                </div>
-
-                <div class="channel-item" tabindex="3"
-                     data-url="https://mze7u.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=190.175.34.68&token=d3f8434ec4771bfd2380cb96d79e5eb1c53ba600-f1-1776322330-1776268330"
-                     data-title="TNT Sports" data-desc="Liga Profesional en vivo.">
-                    <div class="ch-thumb" style="color:#ff004c">TNT</div>
-                    <div class="ch-meta"><h4>TNT Sports</h4><p>Fútbol • Premium</p></div>
-                </div>
-
-                <div class="channel-item" tabindex="4"
-                     data-url="https://mze7u.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=190.175.34.68&token=0c023e9075623e6345639416c4e3804860acd950-1f-1776322328-1776268328"
-                     data-title="DSports" data-desc="Exclusividades de DirecTV.">
-                    <div class="ch-thumb" style="color:#0047ff">D</div>
-                    <div class="ch-meta"><h4>DirecTV Sports</h4><p>Exclusivo • HD</p></div>
-                </div>
-
-            </div>
-        </aside>
+<main>
+    <div class="player-container" tabindex="1">
+        <video id="player" playsinline controls></video>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const video = document.querySelector('#player');
-            const streamTitle = document.querySelector('#stream-title');
-            const streamDesc = document.querySelector('#stream-desc');
-            const channels = document.querySelectorAll('.channel-item');
-            
-            const player = new Plyr(video, {
-                controls: ['play-large', 'play', 'progress', 'current-time', 'fullscreen'],
-                keyboard: { focused: true, global: true }
-            });
+    <div class="stream-info">
+        <h1 id="stream-title">Selecciona Señal</h1>
+        <p id="stream-desc">Cargando la mejor calidad...</p>
+    </div>
+</main>
 
-            const hls = new Hls();
+<aside class="sidebar">
+<h2>LISTA DE CANALES</h2>
 
-            function updateStream(url, title, desc) {
-                streamTitle.innerText = title;
-                streamDesc.innerText = desc;
-                if (Hls.isSupported()) {
-                    hls.loadSource(url);
-                    hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    video.src = url;
-                    video.play();
-                }
-            }
+<div id="channel-list">
 
-            channels.forEach(channel => {
-                const action = () => {
-                    channels.forEach(c => c.classList.remove('active'));
-                    channel.classList.add('active');
-                    updateStream(channel.dataset.url, channel.dataset.title, channel.dataset.desc);
-                };
+<div class="channel-item active" tabindex="2"
+data-url="https://tk0hz.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8"
+data-title="TyC Sports HD"
+data-desc="Fútbol Argentino">
 
-                channel.addEventListener('click', action);
-                channel.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') action();
-                });
-            });
+<div class="ch-thumb">
+<img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/TyC_Sports_logo.png">
+</div>
 
-            // Auto-carga inicial
-            updateStream(channels[0].dataset.url, channels[0].dataset.title, channels[0].dataset.desc);
-        });
-    </script>
+<div class="ch-meta">
+<h4>TyC Sports</h4>
+<p>Deportes • 1080p</p>
+</div>
+</div>
+
+<div class="channel-item" tabindex="3"
+data-url="https://mze7u.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8"
+data-title="TNT Sports"
+data-desc="Liga Profesional">
+
+<div class="ch-thumb">
+<img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/TNT_Sports_Argentina_logo.png">
+</div>
+
+<div class="ch-meta">
+<h4>TNT Sports</h4>
+<p>Fútbol • Premium</p>
+</div>
+</div>
+
+<div class="channel-item" tabindex="4"
+data-url="https://mze7u.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8"
+data-title="DSports"
+data-desc="DirecTV exclusivo">
+
+<div class="ch-thumb">
+<img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/DirecTV_Sports_logo.png">
+</div>
+
+<div class="ch-meta">
+<h4>DirecTV Sports</h4>
+<p>HD • Exclusivo</p>
+</div>
+</div>
+
+</div>
+</aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+const video = document.querySelector('#player');
+const streamTitle = document.querySelector('#stream-title');
+const streamDesc = document.querySelector('#stream-desc');
+const channels = document.querySelectorAll('.channel-item');
+
+const player = new Plyr(video);
+
+const hls = new Hls();
+
+function updateStream(url,title,desc){
+    streamTitle.innerText = title;
+    streamDesc.innerText = desc;
+
+    if(Hls.isSupported()){
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play());
+    } else {
+        video.src = url;
+        video.play();
+    }
+}
+
+channels.forEach(channel=>{
+    const action = ()=>{
+        channels.forEach(c=>c.classList.remove('active'));
+        channel.classList.add('active');
+        updateStream(channel.dataset.url, channel.dataset.title, channel.dataset.desc);
+    };
+
+    channel.addEventListener('click', action);
+    channel.addEventListener('keydown', e=>{
+        if(e.key === 'Enter') action();
+    });
+});
+
+updateStream(channels[0].dataset.url, channels[0].dataset.title, channels[0].dataset.desc);
+
+});
+</script>
+
 </body>
 </html>
