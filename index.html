@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ELITE STREAM | 1.5 FIX TV</title>
+<title>ELITE STREAM | 1.6 MOBILE FIX</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
@@ -32,69 +32,89 @@ body {
 }
 
 header {
-    height:60px;
+    height:50px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:0 30px;
+    padding:0 20px;
     background:#000;
     border-bottom:2px solid rgba(0,242,255,0.2);
+    flex-shrink: 0;
 }
 
-.logo { font-family:'Orbitron'; font-size:1.2rem; letter-spacing:2px; }
-.logo span { color:var(--neon-blue); text-shadow:0 0 10px var(--neon-blue); }
+.logo { font-family:'Orbitron'; font-size:1rem; letter-spacing:1px; }
+.logo span { color:var(--neon-blue); }
 
 .app-grid {
     display:grid;
     grid-template-columns: 75% 25%;
     flex-grow:1;
-    height:calc(100vh - 60px);
+    height:calc(100vh - 50px);
 }
 
-main { background:#000; padding:10px; display:flex; flex-direction:column; }
+main { background:#000; padding:10px; display:flex; flex-direction:column; justify-content: center; }
 .video-js { width: 100% !important; height: 100% !important; border-radius: 10px; }
 
 /* SIDEBAR */
 .sidebar { background:var(--sidebar-bg); border-left:2px solid rgba(255,255,255,0.05); padding:15px; overflow-y:auto; }
 
 .channel-item {
-    display:flex; align-items:center; gap:15px; padding: var(--item-padding);
-    border-radius:12px; cursor:pointer; margin-bottom:12px;
-    background:rgba(255,255,255,0.03); border:3px solid transparent;
+    display:flex; align-items:center; gap:12px; padding: var(--item-padding);
+    border-radius:10px; cursor:pointer; margin-bottom:10px;
+    background:rgba(255,255,255,0.03); border:2px solid transparent;
     transition: 0.2s;
 }
 
-.channel-item:focus, .channel-item:hover {
-    background:rgba(0,242,255,0.2);
-    border-color:var(--neon-blue);
-    transform:scale(1.02);
-}
+.channel-item.active { background:rgba(0,242,255,0.15); border-color:var(--neon-blue); }
 
-.channel-item.active { background:rgba(0,242,255,0.1); border-left:6px solid var(--neon-blue); }
-
-/* LOGOS CORREGIDOS */
 .ch-thumb {
     width: var(--thumb-size);
     height: var(--thumb-size);
-    background: #f0f0f0; /* Fondo gris claro para que resalten logos oscuros */
-    border-radius: 8px;
+    background: #fff;
+    border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; padding: 4px;
-    border: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0; padding: 3px;
 }
 .ch-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.ch-meta h4 { font-size: 1rem; }
+.ch-meta p { font-size: 0.8rem; color: #888; }
 
-/* RESPONSIVE */
-@media (max-width:768px){
-    .app-grid { display:flex; flex-direction:column; height:auto; overflow:auto; }
-    .video-js { height: 230px !important; }
-    :root { --thumb-size: 45px; --item-padding: 10px; }
+/* -----------------------------------------------------------
+   📱 MODO CELULAR HORIZONTAL (LANDSCAPE) - EL FIX QUE PEDISTE
+-------------------------------------------------------------- */
+@media (max-width: 932px) and (orientation: landscape) {
+    header { height: 40px; }
+    .app-grid { 
+        display: grid; 
+        grid-template-columns: 60% 40%; /* El video ya no ocupa todo el ancho */
+        height: calc(100vh - 40px);
+    }
+    main { padding: 5px; }
+    .sidebar { padding: 8px; }
+    
+    /* Botones de canales más chicos para que entren más en horizontal */
+    :root { 
+        --thumb-size: 35px; 
+        --item-padding: 8px; 
+    }
+    .ch-meta h4 { font-size: 0.9rem; }
+    .ch-meta p { display: none; } /* Ocultamos descripción para ahorrar espacio */
+    
+    .channel-item { margin-bottom: 5px; }
 }
 
+/* 📱 MODO CELULAR VERTICAL */
+@media (max-width: 768px) and (orientation: portrait) {
+    .app-grid { display: flex; flex-direction: column; height: auto; overflow-y: auto; }
+    .video-js { height: 230px !important; flex-shrink: 0; }
+    :root { --thumb-size: 45px; --item-padding: 10px; }
+    body { overflow-y: auto; }
+}
+
+/* 📺 MODO TV / PC GIGANTE */
 @media (min-width: 1600px) {
     :root { --item-padding: 25px; --thumb-size: 85px; }
     .ch-meta h4 { font-size: 1.8rem; }
-    .ch-meta p { font-size: 1.2rem; }
 }
 </style>
 </head>
@@ -103,7 +123,7 @@ main { background:#000; padding:10px; display:flex; flex-direction:column; }
 
 <header>
     <div class="logo">ELITE<span>STREAM</span></div>
-    <div style="color:var(--neon-green)">● 1.5 LOGOS OK</div>
+    <div style="color:var(--neon-green); font-size: 0.8rem;">● 1.6 LANDSCAPE FIX</div>
 </header>
 
 <div class="app-grid">
@@ -145,7 +165,7 @@ main { background:#000; padding:10px; display:flex; flex-direction:column; }
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/DirecTV_Sports_logo.png/640px-DirecTV_Sports_logo.png" alt="DSports">
                 </div>
                 <div class="ch-meta">
-                    <h4>DirecTV Sports</h4>
+                    <h4>DSports</h4>
                     <p>HD • Exclusivo</p>
                 </div>
             </div>
@@ -168,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadChannel(url, element) {
         player.src({ src: url, type: 'application/x-mpegURL' });
-        player.play().catch(error => console.log("Autoplay bloqueado por el navegador"));
+        player.play().catch(e => {});
         
         channels.forEach(c => c.classList.remove('active'));
         element.classList.add('active');
@@ -176,9 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     channels.forEach(ch => {
         ch.addEventListener('click', () => loadChannel(ch.dataset.url, ch));
-        ch.addEventListener('keydown', (e) => {
-            if(e.key === 'Enter') loadChannel(ch.dataset.url, ch);
-        });
     });
 
     loadChannel(channels[0].dataset.url, channels[0]);
