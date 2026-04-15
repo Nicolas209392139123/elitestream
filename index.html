@@ -84,22 +84,22 @@ main { background:#000; padding:10px; display:flex; flex-direction:column; justi
 -------------------------------------------------------------- */
 @media (max-width: 932px) and (orientation: landscape) {
     header { height: 40px; }
-    .app-grid { 
-        display: grid; 
+    .app-grid {
+        display: grid;
         grid-template-columns: 60% 40%; /* El video ya no ocupa todo el ancho */
         height: calc(100vh - 40px);
     }
     main { padding: 5px; }
     .sidebar { padding: 8px; }
-    
+
     /* Botones de canales más chicos para que entren más en horizontal */
-    :root { 
-        --thumb-size: 35px; 
-        --item-padding: 8px; 
+    :root {
+        --thumb-size: 35px;
+        --item-padding: 8px;
     }
     .ch-meta h4 { font-size: 0.9rem; }
     .ch-meta p { display: none; } /* Ocultamos descripción para ahorrar espacio */
-    
+
     .channel-item { margin-bottom: 5px; }
 }
 
@@ -127,14 +127,14 @@ main { background:#000; padding:10px; display:flex; flex-direction:column; justi
 </header>
 
 <div class="app-grid">
-    <main>
+    <main id="player-area" tabindex="0" aria-label="Reproductor principal">
         <video id="player" class="video-js vjs-theme-fantasy vjs-big-play-centered" controls preload="auto" playsinline></video>
     </main>
 
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Lista de canales">
         <div id="channel-list">
 
-            <div class="channel-item active" tabindex="2"
+            <div class="channel-item active" tabindex="0"
                 data-url="https://dtkb.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=190.175.34.68&token=d729f8b552cf6817bb5d528bbc0f2b28fa5f8abf-03-1776329601-1776275601"
                 data-title="TyC Sports HD">
                 <div class="ch-thumb">
@@ -146,7 +146,7 @@ main { background:#000; padding:10px; display:flex; flex-direction:column; justi
                 </div>
             </div>
 
-            <div class="channel-item" tabindex="3"
+            <div class="channel-item" tabindex="-1"
                 data-url="https://pvtn5y.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=190.175.34.68&token=c45edaafaf09f9987690fbf323d377a5d989153c-bb-1776329494-1776275494"
                 data-title="TNT Sports">
                 <div class="ch-thumb">
@@ -158,7 +158,7 @@ main { background:#000; padding:10px; display:flex; flex-direction:column; justi
                 </div>
             </div>
 
-            <div class="channel-item" tabindex="4"
+            <div class="channel-item" tabindex="-1"
                 data-url="https://iaw5b.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=190.175.34.68&token=a8aa3845b43aec329e1548bc29e02e3ace918806-83-1776329525-1776275525"
                 data-title="DSports">
                 <div class="ch-thumb">
@@ -174,6 +174,8 @@ main { background:#000; padding:10px; display:flex; flex-direction:column; justi
     </aside>
 </div>
 
+<p id="tv-live-status" hidden aria-live="polite"></p>
+
 <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 
 <script>
@@ -181,24 +183,249 @@ document.addEventListener('DOMContentLoaded', () => {
     const player = videojs('player', {
         fluid: true,
         autoplay: false,
-        userActions: { hotkeys: true }
+        userActions: { hotkeys: false }
     });
 
-    const channels = document.querySelectorAll('.channel-item');
+    const playerArea = document.getElementById('player-area');
+    const liveStatus = document.getElementById('tv-live-status');
+    const channels = Array.from(document.querySelectorAll('.channel-item'));
+    const directKeys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    let focusedIndex = 0;
+    let lastListIndex = 0;
 
-    function loadChannel(url, element) {
-        player.src({ src: url, type: 'application/x-mpegURL' });
-        player.play().catch(e => {});
-        
-        channels.forEach(c => c.classList.remove('active'));
-        element.classList.add('active');
+    function announce(message) {
+        liveStatus.textContent = message;
     }
 
-    channels.forEach(ch => {
-        ch.addEventListener('click', () => loadChannel(ch.dataset.url, ch));
+    function syncTabIndex(activeElement) {
+        channels.forEach(channel => {
+            channel.tabIndex = channel === activeElement ? 0 : -1;
+        });
+    }
+
+    function focusPlayer() {
+        playerArea.focus({ preventScroll: true });
+        player.userActive(true);
+        announce('Reproductor enfocado');
+    }
+
+    function focusChannel(index) {
+        const safeIndex = Math.max(0, Math.min(index, channels.length - 1));
+        const channel = channels[safeIndex];
+
+        focusedIndex = safeIndex;
+        lastListIndex = safeIndex;
+        syncTabIndex(channel);
+        channel.focus({ preventScroll: true });
+        channel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        announce('Canal seleccionado: ' + channel.dataset.title);
+    }
+
+    function getActiveIndex() {
+        const activeIndex = channels.findIndex(channel => channel.classList.contains('active'));
+        return activeIndex === -1 ? 0 : activeIndex;
+    }
+
+    function loadChannel(url, element, options = {}) {
+        const { autoplay = true, focusPlayerAfterLoad = false } = options;
+        const nextIndex = channels.indexOf(element);
+
+        if (nextIndex === -1) {
+            return;
+        }
+
+        player.src({ src: url, type: 'application/x-mpegURL' });
+
+        if (autoplay) {
+            player.play().catch(() => {});
+        }
+
+        channels.forEach(channel => channel.classList.remove('active'));
+        element.classList.add('active');
+
+        focusedIndex = nextIndex;
+        lastListIndex = nextIndex;
+        syncTabIndex(element);
+        announce('Canal cargado: ' + element.dataset.title);
+
+        if (focusPlayerAfterLoad) {
+            requestAnimationFrame(focusPlayer);
+        }
+    }
+
+    function changeChannel(step) {
+        const currentIndex = getActiveIndex();
+        const nextIndex = (currentIndex + step + channels.length) % channels.length;
+        const shouldReturnToPlayer = document.activeElement === playerArea;
+
+        loadChannel(channels[nextIndex].dataset.url, channels[nextIndex], {
+            focusPlayerAfterLoad: shouldReturnToPlayer
+        });
+
+        if (!shouldReturnToPlayer) {
+            focusChannel(nextIndex);
+        }
+    }
+
+    function togglePlayback() {
+        if (player.paused()) {
+            player.play().catch(() => {});
+            announce('Reproduciendo');
+            return;
+        }
+
+        player.pause();
+        announce('Pausado');
+    }
+
+    function toggleMute() {
+        player.muted(!player.muted());
+        announce(player.muted() ? 'Silenciado' : 'Sonido activado');
+    }
+
+    function toggleFullscreen() {
+        if (player.isFullscreen()) {
+            player.exitFullscreen();
+            announce('Saliendo de pantalla completa');
+            return;
+        }
+
+        player.requestFullscreen();
+        announce('Pantalla completa');
+    }
+
+    function jumpToChannelByNumber(key) {
+        const index = Number(key) - 1;
+
+        if (index < 0 || index >= channels.length) {
+            return;
+        }
+
+        loadChannel(channels[index].dataset.url, channels[index], {
+            focusPlayerAfterLoad: true
+        });
+    }
+
+    channels.forEach((channel, index) => {
+        channel.setAttribute('role', 'button');
+        channel.setAttribute('aria-label', channel.dataset.title + ', canal ' + (index + 1));
+
+        channel.addEventListener('click', () => {
+            loadChannel(channel.dataset.url, channel, { focusPlayerAfterLoad: true });
+        });
+
+        channel.addEventListener('focus', () => {
+            focusedIndex = index;
+            lastListIndex = index;
+            syncTabIndex(channel);
+        });
+
+        channel.addEventListener('keydown', event => {
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                focusChannel((index - 1 + channels.length) % channels.length);
+                return;
+            }
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                focusChannel((index + 1) % channels.length);
+                return;
+            }
+
+            if (event.key === 'ArrowLeft' || event.key === 'Escape' || event.key === 'Backspace') {
+                event.preventDefault();
+                focusPlayer();
+                return;
+            }
+
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                loadChannel(channel.dataset.url, channel, { focusPlayerAfterLoad: true });
+                return;
+            }
+
+            if (event.key === 'Home') {
+                event.preventDefault();
+                focusChannel(0);
+                return;
+            }
+
+            if (event.key === 'End') {
+                event.preventDefault();
+                focusChannel(channels.length - 1);
+                return;
+            }
+
+            if (event.key === 'PageUp' || event.key === 'MediaTrackPrevious') {
+                event.preventDefault();
+                changeChannel(-1);
+                return;
+            }
+
+            if (event.key === 'PageDown' || event.key === 'MediaTrackNext') {
+                event.preventDefault();
+                changeChannel(1);
+                return;
+            }
+
+            if (directKeys.includes(event.key)) {
+                event.preventDefault();
+                jumpToChannelByNumber(event.key);
+            }
+        });
     });
 
-    loadChannel(channels[0].dataset.url, channels[0]);
+    playerArea.addEventListener('keydown', event => {
+        if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            focusChannel(lastListIndex);
+            return;
+        }
+
+        if (event.key === 'ArrowUp' || event.key === 'PageUp' || event.key === 'MediaTrackPrevious') {
+            event.preventDefault();
+            changeChannel(-1);
+            return;
+        }
+
+        if (event.key === 'ArrowDown' || event.key === 'PageDown' || event.key === 'MediaTrackNext') {
+            event.preventDefault();
+            changeChannel(1);
+            return;
+        }
+
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'MediaPlayPause' || event.key.toLowerCase() === 'k') {
+            event.preventDefault();
+            togglePlayback();
+            return;
+        }
+
+        if (event.key.toLowerCase() === 'm') {
+            event.preventDefault();
+            toggleMute();
+            return;
+        }
+
+        if (event.key.toLowerCase() === 'f' || event.key === 'F11') {
+            event.preventDefault();
+            toggleFullscreen();
+            return;
+        }
+
+        if (directKeys.includes(event.key)) {
+            event.preventDefault();
+            jumpToChannelByNumber(event.key);
+        }
+    });
+
+    player.on('play', () => announce('Reproduciendo'));
+    player.on('pause', () => announce('Pausado'));
+    player.on('volumechange', () => {
+        announce(player.muted() ? 'Silenciado' : 'Volumen actualizado');
+    });
+
+    loadChannel(channels[0].dataset.url, channels[0], { focusPlayerAfterLoad: true });
 });
 </script>
 
